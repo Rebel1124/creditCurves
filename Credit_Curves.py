@@ -139,7 +139,9 @@ def MTMRegression(data):
     results0 = results.iloc[0]["px_fit_results"].summary()
     results1 = results.iloc[0]["px_fit_results"].params
 
-    return fig, results0, results1
+    r_squared = px.get_trendline_results(fig).px_fit_results.iloc[0].rsquared
+
+    return fig, results0, results1, r_squared
 
 
 
@@ -154,7 +156,9 @@ def MTMRegressionJIBAR(data):
     results0 = results.iloc[0]["px_fit_results"].summary()
     results1 = results.iloc[0]["px_fit_results"].params
 
-    return fig, results0, results1
+    r_squared = px.get_trendline_results(fig).px_fit_results.iloc[0].rsquared
+
+    return fig, results0, results1, r_squared
 
 
 
@@ -201,7 +205,7 @@ st.markdown(" ")
 
 refRate = st.sidebar.number_input('3M JIBAR', value=8.492)
 
-inflation = st.sidebar.number_input('12M Expected Inflation', value=6.800)
+inflation = st.sidebar.number_input('12M YOY CPI', value=6.300)
 
 ####Need to fix this, include or incorporate inflation#############
 ####Also need to think about spread - it should be spread over Companion not JIBAR?########
@@ -389,15 +393,21 @@ if (selection == 'Issuer'):
         issuerFilter = issuerFilter.loc[(issuerFilter['Maturity'] >= dateIssuer1) & (issuerFilter['Maturity'] <= dateIssuer2)]
     
     
-    bondCode = st.checkbox("Filter on Bond Code")
+    st.write('<style>div.row-widget.stRadio > div{flex-direction:row;justify-content: left;} </style>', unsafe_allow_html=True)
+                 
+    bondCode = st.radio("Filter on Bond Code",("No", "Yes"))
 
-    if bondCode:
+    #bondCode = st.checkbox("Filter on Bond Code")
+
+    if(bondCode == "Yes"):
 
         identifier = issuerFilter['Bond Code'].unique()
 
         codeBonds = st.multiselect('Bond Codes', identifier)
 
         issuerFilter = issuerFilter[issuerFilter['Bond Code'].isin(codeBonds)]
+    else:
+        pass
     
 
 
@@ -450,7 +460,7 @@ if (selection == 'Issuer'):
     if showGraph:
 
 
-        yieldGraph, summary, param = MTMRegression(issuerFilter)
+        yieldGraph, summary, param, rSquared = MTMRegression(issuerFilter)
         
         
         graphCol, summaryCol = st.columns([1.1,0.9])
@@ -470,7 +480,9 @@ if (selection == 'Issuer'):
         summaryCol.markdown(' ')
         summaryCol.markdown(' ')
 
-        summaryCol.markdown('Spread over Companion Bond= '+str(round(param[0],2))+' + ' + str(round(param[1],2)) + ' x Term')
+        summaryCol.markdown('Spread over Companion Bond = '+str(round(param[0],2))+' + ' + str(round(param[1],2)) + ' x Term')
+
+        summaryCol.markdown('R-Squared = '+str(round(rSquared,2)))
 
         inputTerm = summaryCol.number_input('Term', value=1.00)
 
@@ -492,12 +504,11 @@ if (selection == 'Issuer'):
         summaryCol.markdown('Semi-Annual YTM = ' + str(YTM))
         
 
-        showSummary= st.checkbox("Companion Bond Regression Results")
-        if showSummary:
-
-            st.header('OLS Results Summary')
-
-            summary
+        #showSummary= st.checkbox("Companion Bond Regression Results")
+        #if showSummary:
+        #
+        #    st.header('OLS Results Summary')
+        #    summary
 
 
 
@@ -507,7 +518,7 @@ if (selection == 'Issuer'):
     if showGraph:
 
 
-        yieldGraph, summary, param = MTMRegressionJIBAR(issuerFilter)
+        yieldGraph, summary, param, rSquaredJibar = MTMRegressionJIBAR(issuerFilter)
         
         
         graphCol, summaryCol = st.columns([1.1,0.9])
@@ -528,6 +539,7 @@ if (selection == 'Issuer'):
         summaryCol.markdown(' ')
 
         summaryCol.markdown('Spread Over 3M JIBAR = '+str(round(param[0],2))+' + ' + str(round(param[1],2)) + ' x Term')
+        summaryCol.markdown('R-Squared = '+str(round(rSquaredJibar,2)))
 
         inputTerm = summaryCol.number_input('Tenor', value=1.00)
 
@@ -546,12 +558,11 @@ if (selection == 'Issuer'):
         summaryCol.markdown('Quarterly YTM = ' + str(YTM))
         summaryCol.markdown('Semi-Annual YTM = ' + str(YTMSemi))
 
-        showSummary= st.checkbox("JIBAR Spread Regression Results")
-        if showSummary:
-
-            st.header('OLS Results Summary')
-
-            summary
+        #showSummary= st.checkbox("JIBAR Spread Regression Results")
+        #if showSummary:
+        #    
+        #    st.header('OLS Results Summary')
+        #    summary
 ######
 
 
