@@ -63,9 +63,12 @@ change = change.rename({'ISSUER_x': 'Issuer',
                         'ISSUER_INDUSTRY_x': 'Industry',
                         'PAYMENT_RANK_x': 'Rank',
                         'Companion Bond_x': 'Companion',
-                        'BP Spread_x': 'Spread(t)',
-                        'BP Spread_y': 'Spread(t-1)',
+                        'BP Spread_x': 'Current Spread',
+                        'BP Spread_y': 'Previous Spread',
             }, axis=1)
+
+
+change = change[['Bond Code', 'Issuer', 'Industry', 'Rank', 'Companion', 'Previous Spread', 'Current Spread', 'Move']]
 
 
 #st.dataframe(change)
